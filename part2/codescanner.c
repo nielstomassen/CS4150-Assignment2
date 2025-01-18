@@ -5,6 +5,8 @@
 #include <sys/mman.h>
 #include "pmparser.h" // Your provided library for parsing /proc/self/maps
 
+static int syscall_count = 0;
+
 // Function to scan all executable memory regions for syscall instructions
 void scan_executable_regions() {
     // Initialize a procmaps iterator to parse memory regions
@@ -40,6 +42,7 @@ void scan_executable_regions() {
             if ((addr + 1) < end && *addr == 0x0F && *(addr + 1) == 0x05) {
                 printf("Syscall found at address: %p in region: %p-%p\n",
                        (void *)addr, region->addr_start, region->addr_end);
+                       syscall_count++;
             }
         }
 
@@ -57,6 +60,7 @@ __attribute__((constructor))
 void initialize_scanner() {
     printf("Initialize Scanning...\n");
     scan_executable_regions();
+    printf("Total numbe of system calls found: %d\n", syscall_count);
     printf("Scanning Completed\n");
     exit(1); // Exit after scanning to prevent further execution of the target application
 }
